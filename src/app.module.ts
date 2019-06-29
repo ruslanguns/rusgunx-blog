@@ -3,19 +3,21 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './controllers/users/users.module';
 import { PipesModule } from './shared/pipes/pipes.module';
 import { PostsModule } from './controllers/posts/posts.module';
+import { AuthModule } from './controllers/auth/auth.module';
+import { DB_URI } from './shared/config';
 
-// Mongoose
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/rusgunx-blog', {
+    MongooseModule.forRoot(DB_URI, {
       useCreateIndex: true,
       useNewUrlParser: true,
       useFindAndModify: false,
     }),
+    AuthModule,
     UsersModule,
-    PipesModule,
     PostsModule,
+    PipesModule,
   ],
   controllers: [],
   providers: [],

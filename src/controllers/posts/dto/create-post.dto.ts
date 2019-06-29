@@ -3,12 +3,8 @@ export class CreatePostDTO {
     title: string;
     content: string;
     authorId: string;
-    tags: [];
-    categories: [];
+    tags: string[];
+    categories: string[];
     commentStatus: boolean;
-    comments: [];
-    visibility: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    deleted: boolean;
+    visibility: string;
 }

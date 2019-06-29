@@ -1,96 +1,63 @@
 import { Schema } from 'mongoose';
 import * as uniqueValidator from 'mongoose-unique-validator';
-
 import * as crypto from 'crypto';
 
-// TODO: No me esta validando
 const ROLES_VALIDOS = {
     values: ['ADMIN_ROLE', 'USER_ROLE'],
-    message: '{VALUE} No es un role permitido.',
+    message: '\'{VALUE}\' is not a allowed role.',
 };
-const SEX = {
+const GENDER = {
     values: ['man', 'woman', 'no_defined'],
-    message: '\'{VALUE}\' No es una opción permitida.',
+    message: '\'{VALUE}\' is not an allowed option.',
 };
 
 export const UserSchema = new Schema({
-    username: {
-        type: String,
-        // unique: true,
-        unique: false,
-        required: [
-            true,
-            'Username is required',
-        ],
-    },
-    password: {
-        type: String,
-        required: [
-            true,
-            'Password is required',
-        ],
-    },
-    firstName: {
-        type: String,
-        required: false,
-        default: '',
-    },
-    lastName: {
-        type: String,
-        required: false,
-        default: '',
-    },
+    username: { type: String, required: true },
+    password: { type: String, required: true },
+    email: { type: String, required: true },
+    firstName: String,
+    lastName: String,
+    phone: String,
     role: {
         type: String,
         default: 'USER_ROLE',
         enum: ROLES_VALIDOS,
     },
-    email: {
+    gender: {
         type: String,
-        // unique: true,
-        unique: false,
-        required: [
-            true,
-            'Email is required',
-        ],
-    },
-    phone: {
-        type: String,
-        required: false,
-        default: '',
-    },
-    sex: {
-        type: String,
-        required: false,
         default: 'no_defined',
-        enum: SEX,
+        enum: GENDER,
     },
+    birth: {
+        type: Date,
+        required: true,
+    },
+    address: {
+        addr1: String,
+        addr2: String,
+        city: String,
+        state: String,
+        country: String,
+        zip: Number,
+    },
+    avatar: String,
     createdAt: {
         type: Date,
         default: Date.now,
     },
-    updatedAt: {
-        type: Date,
-        required: false,
-        default: null,
-    },
-    lastLoginAt: {
-        type: Date,
-        required: false,
-        default: null,
-    },
+    updatedAt: Date,
+    lastLoginAt: Date,
     deleted: {
         type: Boolean,
-        required: false,
         default: false,
     },
-    deletedAt: {
-        type: Date,
-        required: false,
-        default: null,
-    },
+    deletedAt: Date,
 }, { strict: 'throw' });
 
+/**
+ * Middleware que está a la escucha de la función 'save' en el UserSchema
+ * la idea es que antes que guarde, se formatee la contraseña con el hash.
+ */
 UserSchema.pre('save', async function save(next) {
     const user = this as any; // evitar error tslint ts(2339)
     if (!user.isModified('password')) { return next(); }
@@ -102,7 +69,12 @@ UserSchema.pre('save', async function save(next) {
     }
 });
 
-UserSchema.pre('findOneAndUpdate', async function (next) {
+/**
+ * Este es un middleware que se ejecuta *DESPUÉS* de ejecutar la funcion: 'findOneAndUpdate'
+ * por cada actualización que sufre el modelo de UserSchema, realiza una actualización al campo
+ * 'updatedAt' y cuando es modificada la contraseña la formatea con el hash.
+ */
+UserSchema.post('findOneAndUpdate', async function (doc, next) {
     const update = this.getUpdate();
     update.updatedAt = await new Date();
     if (update.password) {

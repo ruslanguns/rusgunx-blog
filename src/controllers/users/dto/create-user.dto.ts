@@ -1,4 +1,4 @@
-import { MinLength, MaxLength, IsEmail, IsString, IsOptional } from 'class-validator';
+import { MinLength, MaxLength, IsEmail, IsString, IsOptional, IsDate } from 'class-validator';
 
 export class CreateUserDTO {
     @MinLength(3)
@@ -26,5 +26,8 @@ export class CreateUserDTO {
 
     @IsString()
     @IsOptional()
-    readonly sex?: string;
+    readonly gender?: string;
+
+    @IsDate()
+    readonly birth: Date;
 }
