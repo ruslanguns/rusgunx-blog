@@ -28,6 +28,5 @@ export class CreateUserDTO {
     @IsOptional()
     readonly gender?: string;
 
-    @IsDate()
-    readonly birth: Date;
+    birth: string;
 }

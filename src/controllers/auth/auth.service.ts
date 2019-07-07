@@ -13,8 +13,8 @@ export class AuthService {
     ) { }
 
     async login(loginUserDto: LoginUserDTO) {
-        const _USER = await this.findOne(loginUserDto);
 
+        const _USER = await this.findOne(loginUserDto);
         const errors = { User: 'Not found' };
 
         if (!_USER) { throw new HttpException({ message: 'Authentication failed.', errors }, HttpStatus.NOT_FOUND); }
@@ -43,17 +43,17 @@ export class AuthService {
             }],
         };
 
-        return await this.usersService.finfOne(findOneOptions);
+        return await this.usersService.findOne(findOneOptions);
     }
 
     public generateJWT(user) {
         const today = new Date();
         const exp = new Date(today);
 
-        exp.setMinutes(today.getMinutes() + 10); // Minutos
+        exp.setMinutes(today.getMinutes() + 0); // Minutos
         exp.setHours(today.getHours() + 0); // Horas
         exp.setDate(today.getDate() + 0); // Dias
-        exp.setMonth(today.getMonth() + 0); // Meses
+        exp.setMonth(today.getMonth() + 12); // Meses
 
         return jwt.sign({
             id: user.id,
@@ -75,6 +75,7 @@ export class AuthService {
             username: user.username,
             email: user.email,
             role: user.role,
+            avatar: user.avatar,
             token: await this.generateJWT(user),
         };
         return { ...userRO };

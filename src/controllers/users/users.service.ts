@@ -5,6 +5,7 @@ import { Users } from './interfaces/users.interface';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { validate, Validator } from 'class-validator';
 import { UserDTO } from './dto/user.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class UsersService {
@@ -25,8 +26,14 @@ export class UsersService {
      * @param dto object
      */
     async createUser(dto: CreateUserDTO): Promise<Users> {
+
         const USER_EXIST = await this.userModel.findOne({ $and: [{ deleted: false }, { $or: [{ username: dto.username }, { email: dto.email }] }] });
         if (USER_EXIST) { throw new BadRequestException(`User already exists.`); }
+
+        const date = (dto.birth as string).split(':')[0];
+        const format = (dto.birth as string).split(':')[1];
+        const formattedDate = await this.toDate(date, format);
+        dto.birth = formattedDate;
 
         const ERRORS = await validate(dto);
         if (ERRORS.length > 0) {
@@ -91,7 +98,7 @@ export class UsersService {
      * @param email string
      */
     async getUserByEmail(email: string): Promise<Users> {
-        if (!this.validator.isEmail(email)) { throw new BadRequestException(`Email wrong format.`) }
+        if (!this.validator.isEmail(email)) { throw new BadRequestException(`Email wrong format.`); }
 
         const USER: Users = await this.userModel.findOne({ $and: [{ email }, { deleted: false }] })
             .catch(error => { throw new BadRequestException(error); });
@@ -104,13 +111,21 @@ export class UsersService {
      * Get user by ID and updates it.
      * --------------------------
      * Creates an user and validates the incomming forms.
-     *  // TODO: Tengo pendiente implementar class-validator()
      * @param userId string
      * @param dto Object
      */
     async updateUser(userId: string, dto: UserDTO): Promise<Users> {
         const user: Users = await this.getUserById(userId);
         if (user) {
+
+            if (dto.birth !== undefined) {
+                const date = (dto.birth as string).split(':')[0];
+                const format = (dto.birth as string).split(':')[1];
+                const formattedDate = await this.toDate(date, format);
+                if (!formattedDate) { throw new BadRequestException(`Date format is wrong.`); }
+                dto.birth = formattedDate;
+            }
+
             const UPDATED_USER: Users = await this.userModel.findByIdAndUpdate(userId, dto, { new: true, runValidators: true })
                 .catch(error => { throw new BadRequestException(error); });
             UPDATED_USER.password = undefined;
@@ -137,7 +152,7 @@ export class UsersService {
         }
     }
 
-    async finfOne(options: object): Promise<Users> {
+    async findOne(options: object): Promise<Users> {
         return await this.userModel.findOne(options);
     }
 
@@ -152,4 +167,10 @@ export class UsersService {
             throw new NotFoundException(`User with ID: ${userId} does not exists.`);
         }
     }
+
+    private async toDate(date: string, dateFormat: string): Promise<string> {
+        const formattedDate = await moment(date, dateFormat).toISOString();
+        return formattedDate;
+    }
+
 }

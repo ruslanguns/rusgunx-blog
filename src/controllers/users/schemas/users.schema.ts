@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose';
 import * as uniqueValidator from 'mongoose-unique-validator';
 import * as crypto from 'crypto';
+import moment = require('moment');
 
 const ROLES_VALIDOS = {
     values: ['ADMIN_ROLE', 'USER_ROLE'],
@@ -74,7 +75,7 @@ UserSchema.pre('save', async function save(next) {
  * por cada actualización que sufre el modelo de UserSchema, realiza una actualización al campo
  * 'updatedAt' y cuando es modificada la contraseña la formatea con el hash.
  */
-UserSchema.post('findOneAndUpdate', async function (doc, next) {
+UserSchema.pre('findOneAndUpdate', async function (next) {
     const update = this.getUpdate();
     update.updatedAt = await new Date();
     if (update.password) {
