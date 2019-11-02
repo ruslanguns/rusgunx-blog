@@ -31,7 +31,7 @@
     "dotenv": "^8.0.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
-    "mongoose": "^5.5.15",
+    "mongoose": "^5.7.5",
     "mongoose-unique-validator": "^2.0.3",
     "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
